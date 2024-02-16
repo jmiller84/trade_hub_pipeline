@@ -1,8 +1,14 @@
 import boto3
 import os
-import csv
+import datetime
+from datetime import date
+from companies_list import companies_list
+import yfinance as yf
+import pandas as pd
+from loguru import logger
 
-
+# Configure logging
+logger.add("create_csv.log", rotation="500 MB", level="INFO") 
 
 # Create a session using your AWS credentials
 session = boto3.Session(
@@ -12,28 +18,43 @@ session = boto3.Session(
 
 # Create an S3 client
 s3 = session.client('s3')
-
-# Define your CSV data
-csv_data = [
-    {'Name': 'John', 'Age': 30},
-    {'Name': 'Jane', 'Age': 25},
-    {'Name': 'Alice', 'Age': 35}
-]
-
-# Define the bucket and file name
 bucket_name = 'trade-hub-bucket'
-file_name = 'example.csv'
 
-# Write CSV data to a file
-with open(file_name, 'w', newline='') as csvfile:
-    fieldnames = ['Name', 'Age']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    writer.writeheader()
-    for row in csv_data:
-        writer.writerow(row)
 
-# Upload the file to S3
-s3.upload_file(file_name, bucket_name, file_name)
+start_date = date.today() - datetime.timedelta(days=365)
+end_date = date.today()
 
-# Delete the local file after uploading it to S3
-os.remove(file_name)
+
+for company in companies_list:
+    symbol = company[0]
+    company_name = company[1]
+    df  = yf.download(symbol,start_date, end_date)
+
+    # Check that data has been downloaded
+    if len(df) == 0:
+        logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
+
+    else:
+        # Define the file name    
+        file_name = f'{symbol}.csv'
+        # Write df to CSV file
+        df.to_csv(file_name, index=0)
+        # Upload the file to S3, args= 1, path to csv file, 2, bucket name, file_name the csv will be saved as is in S3
+        s3.upload_file(file_name, bucket_name, file_name)
+        # Delete the local file after uploading it to S3
+        os.remove(file_name)
+
+
+
+# Testing script download stock data for single stock
+
+# symbol = 'AAPL'
+# company_name = 'Apple Stock'
+# df  = yf.download(symbol,start_date, end_date)
+
+# # Check that data has been downloaded
+# if len(df) == 0:
+#     logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
+
+# else:
+#     print(df)
