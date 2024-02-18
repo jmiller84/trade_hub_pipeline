@@ -38,7 +38,8 @@ for company in companies_list:
         # Define the file name    
         file_name = f'{symbol}.csv'
         # Write df to CSV file
-        df.to_csv(file_name, index=0)
+        df.reset_index(inplace=True)
+        df.to_csv(file_name, index=False)
         # Upload the file to S3, args= 1, path to csv file, 2, bucket name, file_name the csv will be saved as is in S3
         s3.upload_file(file_name, bucket_name, file_name)
         # Delete the local file after uploading it to S3
@@ -46,7 +47,7 @@ for company in companies_list:
 
 
 
-# Testing script download stock data for single stock
+# # Testing script download stock data for single stock
 
 # symbol = 'AAPL'
 # company_name = 'Apple Stock'
@@ -57,4 +58,9 @@ for company in companies_list:
 #     logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
 
 # else:
-#     print(df)
+#     # print(df)
+#     # Define the file name    
+#     file_name = f'{symbol}.csv'
+#     # Write df to CSV file
+#     df.reset_index(inplace=True)
+#     df.to_csv(file_name, index=False)
