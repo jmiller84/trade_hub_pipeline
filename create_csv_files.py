@@ -22,45 +22,50 @@ bucket_name = 'trade-hub-bucket'
 
 
 start_date = date.today() - datetime.timedelta(days=365)
-end_date = date.today()
+end_date = date.today() 
 
 
-for company in companies_list:
-    symbol = company[0]
-    company_name = company[1]
-    df  = yf.download(symbol,start_date, end_date)
+# for company in companies_list:
+#     symbol = company[0]
+#     company_name = company[1]
+#     df  = yf.download(symbol,start_date, end_date)
 
-    # Check that data has been downloaded
-    if len(df) == 0:
-        logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
+#     # Check that data has been downloaded
+#     if len(df) == 0:
+#         logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
 
-    else:
-        # Define the file name    
-        file_name = f'{symbol}.csv'
-        # Write df to CSV file
-        df.reset_index(inplace=True)
-        df.to_csv(file_name, index=False)
-        # Upload the file to S3, args= 1, path to csv file, 2, bucket name, file_name the csv will be saved as is in S3
-        s3.upload_file(file_name, bucket_name, file_name)
-        # Delete the local file after uploading it to S3
-        os.remove(file_name)
+#     else:
+#         # Define the file name    
+#         file_name = f'{symbol}.csv'
+#         # Write df to CSV file
+#         df.reset_index(inplace=True)
+#         df.to_csv(file_name, index=False)
+#         # Upload the file to S3, args= 1, path to csv file, 2, bucket name, file_name the csv will be saved as is in S3
+#         s3.upload_file(file_name, bucket_name, file_name)
+#         # Delete the local file after uploading it to S3
+#         os.remove(file_name)
 
 
 
-# # Testing script download stock data for single stock
+# Testing script to download stock data for single stock
+        
+start_date = date.today() - datetime.timedelta(days=365)
+end_date = date.today() - datetime.timedelta(days=5)
 
-# symbol = 'AAPL'
-# company_name = 'Apple Stock'
-# df  = yf.download(symbol,start_date, end_date)
+symbol = 'AAPL'
+company_name = 'Apple Stock'
+df  = yf.download(symbol,start_date, end_date)
 
-# # Check that data has been downloaded
-# if len(df) == 0:
-#     logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
+# Check that data has been downloaded
+if len(df) == 0:
+    logger.error(f"{symbol} No stock data downloaded, symbol may be delisted")
 
-# else:
-#     # print(df)
-#     # Define the file name    
-#     file_name = f'{symbol}.csv'
-#     # Write df to CSV file
-#     df.reset_index(inplace=True)
-#     df.to_csv(file_name, index=False)
+else:
+    # print(df)
+    # Define the file name    
+    file_name = 'TEST.csv'
+    # Write df to CSV file
+    df.reset_index(inplace=True)
+    df.to_csv(file_name, index=False)
+
+    s3.upload_file(file_name, bucket_name, file_name)
